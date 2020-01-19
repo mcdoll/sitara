@@ -70,8 +70,8 @@ impl ops::Deref for TimerMemory {
 }
 
 impl TimerMemory {
-    fn new(mem_addr: u32) -> Self {
-        TimerMemory {memory_addr: mem_addr }
+    fn new(memory_addr: u32) -> Self {
+        TimerMemory { memory_addr }
     }
     fn ptr(&self) -> *mut RegisterBlock {
         self.memory_addr as *mut _
@@ -85,7 +85,7 @@ pub struct Timer {
 impl Timer {
     pub fn new(memory_addr: u32) -> Self {
         let memory = TimerMemory::new(memory_addr);
-        Timer { memory: memory }
+        Timer { memory }
     }
     pub fn start(&self) {
         self.memory.TCLR.modify(TCLR::ST::Start);

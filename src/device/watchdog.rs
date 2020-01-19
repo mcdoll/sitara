@@ -52,8 +52,8 @@ impl ops::Deref for WatchdogMemory {
 }
 
 impl WatchdogMemory {
-    fn new(mem_addr: u32) -> Self {
-        WatchdogMemory {memory_addr: mem_addr }
+    fn new(memory_addr: u32) -> Self {
+        WatchdogMemory { memory_addr }
     }
     fn ptr(&self) -> *mut RegisterBlock {
         self.memory_addr as *mut _
@@ -67,7 +67,7 @@ pub struct Watchdog {
 impl Watchdog {
     pub fn new(memory_addr: u32) -> Self {
         let memory = WatchdogMemory::new(memory_addr);
-        Watchdog { memory: memory }
+        Watchdog { memory }
     }
 
     #[inline]
@@ -95,6 +95,6 @@ impl Watchdog {
         self.wait(WDT_WWPS::W_PEND_WSPR);
     }
 
-    pub fn _alive() -> () {
+    pub fn _alive() {
     }
 }
