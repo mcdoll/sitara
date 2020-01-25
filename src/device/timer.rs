@@ -16,7 +16,7 @@ register_bitfields! {
     ],
     TCLR [
         ST OFFSET(0) NUMBITS(1) [Start = 1, Stop = 0],
-        AR OFFSET(1) NUMBITS(1) [],
+        AR OFFSET(1) NUMBITS(1) [Enable = 1, Disable = 0],
         PTV OFFSET(2) NUMBITS(3) [],
         PRE OFFSET(5) NUMBITS(1) [PrescaleEnable = 1, PrescaleDisable = 0],
         CE OFFSET(6) NUMBITS(1) [],
@@ -40,22 +40,25 @@ register_bitfields! {
 #[allow(non_snake_case)]
 #[repr(C)]
 struct RegisterBlock {
-    _TIDR: ReadWrite<u32, ()>,
-    _TIOCP_CFG: ReadWrite<u32, ()>,
-    _IRQ_EOI: ReadWrite<u32, ()>,
-    _IRQSTATUS_RAW: ReadWrite<u32, MODE::Register>,
-    _IRQSTATUS: ReadWrite<u32, MODE::Register>,
-    IRQENABLE_SET: ReadWrite<u32, MODE::Register>,
-    _IRQENABLE_CLR: ReadWrite<u32, MODE::Register>,
-    TCLR: ReadWrite<u32, TCLR::Register>,
-    _TCRR: ReadWrite<u32, ()>,
-    TLDR: ReadWrite<u32, ()>,
-    _TCGR: ReadWrite<u32, ()>,
-    TWPS: ReadOnly<u32, TWPS::Register>,
-    _TMAR: ReadWrite<u32, ()>,
-    _TCAR1: ReadWrite<u32, ()>,
-    _TSICR: ReadWrite<u32, ()>,
-    _TCAR2: ReadWrite<u32, ()>,
+    _TIDR: ReadWrite<u32, ()>,                          // 0x00
+    __reserved_0: [u32; 3],                             // 0x04, 0x08, 0x0c
+    _TIOCP_CFG: ReadWrite<u32, ()>,                     // 0x10
+    __reserved_1: [u32; 3],                             // 0x14, 0x18, 0x1c
+    _IRQ_EOI: ReadWrite<u32, ()>,                       // 0x20
+    IRQSTATUS_RAW: ReadWrite<u32, MODE::Register>,      // 0x24
+    _IRQSTATUS: ReadWrite<u32, MODE::Register>,         // 0x28
+    IRQENABLE_SET: ReadWrite<u32, MODE::Register>,      // 0x2C
+    _IRQENABLE_CLR: ReadWrite<u32, MODE::Register>,     // 0x30
+    IRQWAKEEN: ReadWrite<u32, MODE::Register>,          // 0x34
+    TCLR: ReadWrite<u32, TCLR::Register>,               // 0x38
+    _TCRR: ReadWrite<u32, ()>,                          // 0x3C
+    TLDR: ReadWrite<u32, ()>,                           // 0x40
+    _TCGR: ReadWrite<u32, ()>,                          // 0x44
+    TWPS: ReadOnly<u32, TWPS::Register>,                // 0x48
+    _TMAR: ReadWrite<u32, ()>,                          // 0x4C
+    _TCAR1: ReadWrite<u32, ()>,                         // 0x50
+    _TSICR: ReadWrite<u32, ()>,                         // 0x54
+    _TCAR2: ReadWrite<u32, ()>,                         // 0x58
 }
 
 struct TimerMemory {
@@ -88,7 +91,7 @@ impl Timer {
         Timer { memory }
     }
     pub fn start(&self) {
-        self.memory.TCLR.modify(TCLR::ST::Start);
+        self.memory.TCLR.modify(TCLR::ST::Start + TCLR::AR::Enable);
         self.wait(TWPS::W_PEND_TCLR);
     }
     pub fn stop(&self) {
@@ -112,5 +115,8 @@ impl Timer {
             }
             unsafe { arm::__nop() };
         }
+    }
+    pub fn debug_irq(&self) {
+        self.memory.IRQSTATUS_RAW.write(MODE::OVERFLOW::Enable);
     }
 }
