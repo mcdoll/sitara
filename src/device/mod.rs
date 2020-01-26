@@ -3,9 +3,10 @@
 // Author: Moritz Doll
 // License: MIT
 
-pub mod uart;
 pub mod console;
+pub mod gpio;
 pub mod timer;
+pub mod uart;
 pub mod watchdog;
 
 pub use console::*;
