@@ -3,9 +3,9 @@
 //! Author: Moritz Doll
 //! License: MIT
 
-use register::{mmio::*, register_bitfields, Field};
-use core::ops;
 use core::arch::arm;
+use core::ops;
+use register::{mmio::*, register_bitfields, Field};
 
 register_bitfields! {
     u32,
@@ -34,31 +34,31 @@ register_bitfields! {
         W_PEND_TTGR OFFSET(3) NUMBITS(1) [Write = 1, NoWrite = 0],
         W_PEND_TMAR OFFSET(4) NUMBITS(1) [Write = 1, NoWrite = 0]
     ]
-        
+
 }
 
 #[allow(non_snake_case)]
 #[repr(C)]
 struct RegisterBlock {
-    _TIDR: ReadWrite<u32, ()>,                          // 0x00
-    __reserved_0: [u32; 3],                             // 0x04, 0x08, 0x0c
-    _TIOCP_CFG: ReadWrite<u32, ()>,                     // 0x10
-    __reserved_1: [u32; 3],                             // 0x14, 0x18, 0x1c
-    _IRQ_EOI: ReadWrite<u32, ()>,                       // 0x20
-    IRQSTATUS_RAW: ReadWrite<u32, MODE::Register>,      // 0x24
-    _IRQSTATUS: ReadWrite<u32, MODE::Register>,         // 0x28
-    IRQENABLE_SET: ReadWrite<u32, MODE::Register>,      // 0x2C
-    _IRQENABLE_CLR: ReadWrite<u32, MODE::Register>,     // 0x30
-    IRQWAKEEN: ReadWrite<u32, MODE::Register>,          // 0x34
-    TCLR: ReadWrite<u32, TCLR::Register>,               // 0x38
-    _TCRR: ReadWrite<u32, ()>,                          // 0x3C
-    TLDR: ReadWrite<u32, ()>,                           // 0x40
-    _TCGR: ReadWrite<u32, ()>,                          // 0x44
-    TWPS: ReadOnly<u32, TWPS::Register>,                // 0x48
-    _TMAR: ReadWrite<u32, ()>,                          // 0x4C
-    _TCAR1: ReadWrite<u32, ()>,                         // 0x50
-    _TSICR: ReadWrite<u32, ()>,                         // 0x54
-    _TCAR2: ReadWrite<u32, ()>,                         // 0x58
+    _TIDR: ReadWrite<u32, ()>,                      // 0x00
+    __reserved_0: [u32; 3],                         // 0x04, 0x08, 0x0c
+    _TIOCP_CFG: ReadWrite<u32, ()>,                 // 0x10
+    __reserved_1: [u32; 3],                         // 0x14, 0x18, 0x1c
+    _IRQ_EOI: ReadWrite<u32, ()>,                   // 0x20
+    IRQSTATUS_RAW: ReadWrite<u32, MODE::Register>,  // 0x24
+    _IRQSTATUS: ReadWrite<u32, MODE::Register>,     // 0x28
+    IRQENABLE_SET: ReadWrite<u32, MODE::Register>,  // 0x2C
+    _IRQENABLE_CLR: ReadWrite<u32, MODE::Register>, // 0x30
+    IRQWAKEEN: ReadWrite<u32, MODE::Register>,      // 0x34
+    TCLR: ReadWrite<u32, TCLR::Register>,           // 0x38
+    _TCRR: ReadWrite<u32, ()>,                      // 0x3C
+    TLDR: ReadWrite<u32, ()>,                       // 0x40
+    _TCGR: ReadWrite<u32, ()>,                      // 0x44
+    TWPS: ReadOnly<u32, TWPS::Register>,            // 0x48
+    _TMAR: ReadWrite<u32, ()>,                      // 0x4C
+    _TCAR1: ReadWrite<u32, ()>,                     // 0x50
+    _TSICR: ReadWrite<u32, ()>,                     // 0x54
+    _TCAR2: ReadWrite<u32, ()>,                     // 0x58
 }
 
 struct TimerMemory {
@@ -68,7 +68,7 @@ struct TimerMemory {
 impl ops::Deref for TimerMemory {
     type Target = RegisterBlock;
     fn deref(&self) -> &Self::Target {
-        unsafe {&*self.ptr() }
+        unsafe { &*self.ptr() }
     }
 }
 
@@ -82,7 +82,7 @@ impl TimerMemory {
 }
 
 pub struct Timer {
-    memory: TimerMemory
+    memory: TimerMemory,
 }
 
 impl Timer {
@@ -99,7 +99,9 @@ impl Timer {
         self.wait(TWPS::W_PEND_TCLR);
     }
     pub fn init(&self, length: u32) {
-        self.memory.TCLR.modify(TCLR::ST::Stop + TCLR::PRE::PrescaleDisable);
+        self.memory
+            .TCLR
+            .modify(TCLR::ST::Stop + TCLR::PRE::PrescaleDisable);
         self.wait(TWPS::W_PEND_TCLR);
         let timer_rate = 0xffff_ffff - length;
         self.memory.TLDR.set(timer_rate);
