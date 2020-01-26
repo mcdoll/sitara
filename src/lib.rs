@@ -6,8 +6,8 @@
 // License: MIT
 
 #![no_std]
-
 #![feature(stdsimd)]
 
 pub mod device;
+pub mod interrupt_controller;
 pub mod memory_map;
