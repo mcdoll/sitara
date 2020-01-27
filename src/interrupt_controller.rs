@@ -179,7 +179,7 @@ impl InterruptNumber {
     }
     pub fn from_u32(number: u32) -> InterruptNumber {
         let bitmask = 127; // = 0x7f
-        let truncated = number | bitmask;
+        let truncated = number & bitmask;
         InterruptNumber(truncated as u8)
     }
     fn get_shift(&self) -> u32 {
@@ -187,6 +187,12 @@ impl InterruptNumber {
     }
     fn get_offset(&self) -> u32 {
         (self.0 / 32) as u32
+    }
+    /// Returns the interrupt number
+    ///
+    /// The number is always <= 127
+    pub fn as_u8(&self) -> u8 {
+        self.0
     }
     fn as_u32(&self) -> u32 {
         self.0 as u32
