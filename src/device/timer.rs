@@ -6,6 +6,7 @@
 use core::arch::arm;
 use core::ops;
 use register::{mmio::*, register_bitfields, Field};
+use armv7::VirtualAddress;
 
 register_bitfields! {
     u32,
@@ -53,7 +54,7 @@ struct RegisterBlock {
     TCLR: ReadWrite<u32, TCLR::Register>,           // 0x38
     _TCRR: ReadWrite<u32, ()>,                      // 0x3C
     TLDR: ReadWrite<u32, ()>,                       // 0x40
-    _TCGR: ReadWrite<u32, ()>,                      // 0x44
+    TTGR: ReadWrite<u32, ()>,                       // 0x44
     TWPS: ReadOnly<u32, TWPS::Register>,            // 0x48
     _TMAR: ReadWrite<u32, ()>,                      // 0x4C
     _TCAR1: ReadWrite<u32, ()>,                     // 0x50
@@ -86,18 +87,28 @@ pub struct Timer {
 }
 
 impl Timer {
-    pub fn new(memory_addr: u32) -> Self {
-        let memory = TimerMemory::new(memory_addr);
+    /// Creates a new timer
+    ///
+    /// # Safety
+    /// The virtual address has to point to the correct physical address
+    pub unsafe fn new(memory_addr: VirtualAddress) -> Self {
+        let memory = TimerMemory::new(memory_addr.as_u32());
         Timer { memory }
     }
+    /// Start the timer
     pub fn start(&self) {
+        // Reset the clock to the load time
+        self.trigger();
+        // Write the start bit
         self.memory.TCLR.modify(TCLR::ST::Start + TCLR::AR::Enable);
         self.wait(TWPS::W_PEND_TCLR);
     }
+    /// Stop the timer
     pub fn stop(&self) {
         self.memory.TCLR.modify(TCLR::ST::Stop);
         self.wait(TWPS::W_PEND_TCLR);
     }
+    /// Initialize and start the timer
     pub fn init(&self, length: u32) {
         self.memory
             .TCLR
@@ -106,8 +117,17 @@ impl Timer {
         let timer_rate = 0xffff_ffff - length;
         self.memory.TLDR.set(timer_rate);
         self.wait(TWPS::W_PEND_TLDR);
+        // Reset the clock to the load time
+        self.trigger();
         self.memory.IRQENABLE_SET.write(MODE::OVERFLOW::Enable);
         self.start();
+    }
+    fn trigger(&self) {
+        let mut val = self.memory.TTGR.get();
+        if val == 0xffff_ffff { val = 0 }
+        else { val += 1 };
+        self.memory.TTGR.set(val);
+        self.wait(TWPS::W_PEND_TTGR);
     }
     #[inline]
     fn wait(&self, reg: Field<u32, TWPS::Register>) {
@@ -118,6 +138,7 @@ impl Timer {
             unsafe { arm::__nop() };
         }
     }
+    /// Set the raw status bit for the overflow interrupt
     pub fn debug_irq(&self) {
         self.memory.IRQSTATUS_RAW.write(MODE::OVERFLOW::Enable);
     }
