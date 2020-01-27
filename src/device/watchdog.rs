@@ -6,6 +6,7 @@
 use core::arch::arm;
 use core::ops;
 use register::{mmio::*, register_bitfields, Field};
+use armv7::VirtualAddress;
 
 register_bitfields! {
     u32,
@@ -74,8 +75,8 @@ pub struct Watchdog {
 }
 
 impl Watchdog {
-    pub fn new(memory_addr: u32) -> Self {
-        let memory = WatchdogMemory::new(memory_addr);
+    pub unsafe fn new(memory_addr: VirtualAddress) -> Self {
+        let memory = WatchdogMemory::new(memory_addr.as_u32());
         let counter = memory.WTGR.get();
         Watchdog { memory, counter }
     }
