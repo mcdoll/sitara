@@ -4,7 +4,6 @@
 // License: MIT
 
 use core::arch::arm;
-use core::ops;
 use register::{mmio::*, register_bitfields, Field};
 use armv7::VirtualAddress;
 
@@ -49,34 +48,14 @@ struct RegisterBlock {
     WIRQENCLR: ReadWrite<u32, WDT_WIRQ::Register>,   // 0x60
 }
 
-struct WatchdogMemory {
-    memory_addr: u32,
-}
-
-impl ops::Deref for WatchdogMemory {
-    type Target = RegisterBlock;
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*self.ptr() }
-    }
-}
-
-impl WatchdogMemory {
-    fn new(memory_addr: u32) -> Self {
-        WatchdogMemory { memory_addr }
-    }
-    fn ptr(&self) -> *mut RegisterBlock {
-        self.memory_addr as *mut _
-    }
-}
-
 pub struct Watchdog {
-    memory: WatchdogMemory,
+    memory: &'static RegisterBlock,
     counter: u32,
 }
 
 impl Watchdog {
     pub unsafe fn new(memory_addr: VirtualAddress) -> Self {
-        let memory = WatchdogMemory::new(memory_addr.as_u32());
+        let memory = &*(memory_addr.as_u32() as *mut RegisterBlock);
         let counter = memory.WTGR.get();
         Watchdog { memory, counter }
     }

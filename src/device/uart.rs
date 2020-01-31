@@ -6,8 +6,8 @@
 use crate::device::console;
 use core::arch::arm;
 use core::fmt;
-use core::ops;
 use register::{mmio::*, register_bitfields, Field};
+use armv7::VirtualAddress;
 
 register_bitfields! {
     u32,
@@ -63,38 +63,18 @@ struct RegisterBlock {
     SSR: ReadOnly<u32, SSR::Register>,
 }
 
-struct MemoryUart {
-    memory_addr: u32,
-}
-
-impl ops::Deref for MemoryUart {
-    type Target = RegisterBlock;
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*self.ptr() }
-    }
-}
-
-impl MemoryUart {
-    fn new(mem_addr: u32) -> MemoryUart {
-        MemoryUart {
-            memory_addr: mem_addr,
-        }
-    }
-    fn ptr(&self) -> *mut RegisterBlock {
-        self.memory_addr as *mut _
-    }
-}
-
 pub struct Uart {
-    memory: MemoryUart,
+    memory: &'static RegisterBlock,
 }
 
 impl Uart {
-    pub fn new(address: u32) -> Uart {
-        let memory_block = MemoryUart::new(address);
-        Uart {
-            memory: memory_block,
-        }
+    pub unsafe fn new(memory_addr: VirtualAddress) -> Uart {
+        let memory = &*(memory_addr.as_u32() as *mut RegisterBlock);
+        Uart { memory }
+    }
+    pub unsafe fn new_from_u32(memory_addr: u32) -> Uart {
+        let memory = &*(memory_addr as *mut RegisterBlock);
+        Uart { memory }
     }
 
     #[inline]

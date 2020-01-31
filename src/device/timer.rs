@@ -1,10 +1,9 @@
 //! Timer for the Sitara SoC
 //!
-//! Author: Moritz Doll
-//! License: MIT
+// Author: Moritz Doll
+// License: MIT
 
 use core::arch::arm;
-use core::ops;
 use register::{mmio::*, register_bitfields, Field};
 use armv7::VirtualAddress;
 
@@ -47,7 +46,7 @@ struct RegisterBlock {
     __reserved_1: [u32; 3],                         // 0x14, 0x18, 0x1c
     _IRQ_EOI: ReadWrite<u32, ()>,                   // 0x20
     IRQSTATUS_RAW: ReadWrite<u32, MODE::Register>,  // 0x24
-    _IRQSTATUS: ReadWrite<u32, MODE::Register>,     // 0x28
+    IRQSTATUS: ReadWrite<u32, MODE::Register>,      // 0x28
     IRQENABLE_SET: ReadWrite<u32, MODE::Register>,  // 0x2C
     _IRQENABLE_CLR: ReadWrite<u32, MODE::Register>, // 0x30
     IRQWAKEEN: ReadWrite<u32, MODE::Register>,      // 0x34
@@ -62,28 +61,8 @@ struct RegisterBlock {
     _TCAR2: ReadWrite<u32, ()>,                     // 0x58
 }
 
-struct TimerMemory {
-    memory_addr: u32,
-}
-
-impl ops::Deref for TimerMemory {
-    type Target = RegisterBlock;
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*self.ptr() }
-    }
-}
-
-impl TimerMemory {
-    fn new(memory_addr: u32) -> Self {
-        TimerMemory { memory_addr }
-    }
-    fn ptr(&self) -> *mut RegisterBlock {
-        self.memory_addr as *mut _
-    }
-}
-
 pub struct Timer {
-    memory: TimerMemory,
+    memory: &'static RegisterBlock,
 }
 
 impl Timer {
@@ -92,7 +71,7 @@ impl Timer {
     /// # Safety
     /// The virtual address has to point to the correct physical address
     pub unsafe fn new(memory_addr: VirtualAddress) -> Self {
-        let memory = TimerMemory::new(memory_addr.as_u32());
+        let memory = &*(memory_addr.as_u32() as *mut RegisterBlock);
         Timer { memory }
     }
     /// Start the timer
@@ -139,7 +118,15 @@ impl Timer {
         }
     }
     /// Set the raw status bit for the overflow interrupt
-    pub fn debug_irq(&self) {
+    pub fn debug_set_irq(&self) {
         self.memory.IRQSTATUS_RAW.write(MODE::OVERFLOW::Enable);
+    }
+    /// Read the raw status bits
+    pub fn debug_read_irq(&self) -> u32 {
+        self.memory.IRQSTATUS_RAW.get()
+    }
+    /// Clear the overflow interrupt
+    pub fn clear_overflow_irq(&self) {
+        self.memory.IRQSTATUS.write(MODE::OVERFLOW::Enable);
     }
 }
