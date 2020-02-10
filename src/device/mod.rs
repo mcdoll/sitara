@@ -8,5 +8,6 @@ pub mod gpio;
 pub mod timer;
 pub mod uart;
 pub mod watchdog;
+pub mod control_mod;
 
 pub use console::*;

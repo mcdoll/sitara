@@ -6,4 +6,3 @@ pub trait Console {
     fn getc(&self) -> char;
     //fn flush(&mut self);
 }
-
