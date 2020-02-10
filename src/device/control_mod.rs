@@ -1,8 +1,7 @@
 //! Low level access to the control module functional group
 
-
-use register::{mmio::*, register_bitfields, Field};
 use armv7::VirtualAddress;
+use register::{mmio::*, register_bitfields, Field};
 
 register_bitfields! {
     u32,
@@ -34,11 +33,15 @@ impl Control {
         Self { memory }
     }
     pub fn set(&self, index: usize, value: u32) {
-        if index > CONF_NUM { return }
+        if index > CONF_NUM {
+            return;
+        }
         self.memory.CONF_MOD[index].set(value);
     }
-    pub fn get(&self, index: usize) -> Option<u32>{
-        if index > CONF_NUM { return None }
+    pub fn get(&self, index: usize) -> Option<u32> {
+        if index > CONF_NUM {
+            return None;
+        }
         Some(self.memory.CONF_MOD[index].get())
     }
 }

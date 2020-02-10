@@ -3,9 +3,9 @@
 // Author: Moritz Doll
 // License: MIT
 
-use register::{mmio::*, register_bitfields};
 use armv7::VirtualAddress;
 use core::marker::PhantomData;
+use register::{mmio::*, register_bitfields};
 
 register_bitfields! {
     u32,
@@ -50,24 +50,23 @@ struct RegisterBlock {
     IRQSTATUS_CLR_0: ReadWrite<u32, ()>,
     IRQSTATUS_CLR_1: ReadWrite<u32, ()>,
     IRQWAKEN_0: ReadWrite<u32, ()>,
-    IRQWAKEN_1: ReadWrite<u32, ()>,                     // 0x48
+    IRQWAKEN_1: ReadWrite<u32, ()>, // 0x48
     __reserved_2: [u32; 50],
-    SYSSTATUS: ReadOnly<u32, SYSSTATUS::Register>,      // 0x114
-    __reserved_3: [u32; 6],                             // 0x118, 11C, 120, 124, 128, 12c
-    CTRL: ReadWrite<u32, CTRL::Register>,               // 0x130
-    OE: ReadWrite<u32, ()>,                             // 0x134
-    DATAIN: ReadOnly<u32, ()>,                          // 0x138
-    DATAOUT: ReadWrite<u32, ()>,                        // 0x13C
-    LEVELDETECT_0: ReadWrite<u32, ()>,                  // 0x140
-    LEVELDETECT_1: ReadWrite<u32, ()>,                  // 0x144
-    RISINGDETECT: ReadWrite<u32, ()>,                   // 0x148
-    FALLINGDETECT: ReadWrite<u32, ()>,                  // 0x14C
-    DEBOUNCEENABLE: ReadWrite<u32, ()>,                 // 0x150
-    DEBOUNINGTIME: ReadWrite<u32, ()>,                  // 0x154
+    SYSSTATUS: ReadOnly<u32, SYSSTATUS::Register>, // 0x114
+    __reserved_3: [u32; 6],                        // 0x118, 11C, 120, 124, 128, 12c
+    CTRL: ReadWrite<u32, CTRL::Register>,          // 0x130
+    OE: ReadWrite<u32, ()>,                        // 0x134
+    DATAIN: ReadOnly<u32, ()>,                     // 0x138
+    DATAOUT: ReadWrite<u32, ()>,                   // 0x13C
+    LEVELDETECT_0: ReadWrite<u32, ()>,             // 0x140
+    LEVELDETECT_1: ReadWrite<u32, ()>,             // 0x144
+    RISINGDETECT: ReadWrite<u32, ()>,              // 0x148
+    FALLINGDETECT: ReadWrite<u32, ()>,             // 0x14C
+    DEBOUNCEENABLE: ReadWrite<u32, ()>,            // 0x150
+    DEBOUNINGTIME: ReadWrite<u32, ()>,             // 0x154
     __reserved_4: [u32; 14],
-    CLEARDATAOUT: ReadWrite<u32, ()>,                   // 0x190
-    SETDATAOUT: ReadWrite<u32, ()>,                     // 0x194
-    
+    CLEARDATAOUT: ReadWrite<u32, ()>, // 0x190
+    SETDATAOUT: ReadWrite<u32, ()>,   // 0x194
 }
 
 #[derive(Debug)]
@@ -81,9 +80,13 @@ pub struct Pin<T> {
     gpio_type: PhantomData<T>,
 }
 
-impl <T>Pin<T> {
+impl<T> Pin<T> {
     fn new(number: u8, memory: &'static RegisterBlock) -> Self {
-        Pin { number, memory, gpio_type: PhantomData }
+        Pin {
+            number,
+            memory,
+            gpio_type: PhantomData,
+        }
     }
     #[inline]
     fn bitmask(&self) -> u32 {
@@ -93,7 +96,7 @@ impl <T>Pin<T> {
 
 impl Pin<Output> {
     pub fn to_input(self) -> Pin<Output> {
-        unimplemented!{}
+        unimplemented! {}
     }
     pub fn read(&self) -> bool {
         (self.memory.DATAOUT.get() & self.bitmask()) != 0
@@ -113,7 +116,7 @@ impl Pin<Output> {
 
 impl Pin<Input> {
     pub fn to_output(self) -> Pin<Output> {
-        unimplemented!{}
+        unimplemented! {}
     }
 }
 
@@ -128,23 +131,31 @@ impl Gpio {
         Gpio { memory, owned: 0 }
     }
     pub fn get_pin_as_input(&mut self, number: u8) -> Option<Pin<Input>> {
-        if number > 31 { return None }
+        if number > 31 {
+            return None;
+        }
         let bit = 1 << (number as u32);
         // Check whether the pin was already given to someone
-        if self.owned & bit == 1 { return None }
+        if self.owned & bit == 1 {
+            return None;
+        }
         self.owned |= bit;
         let bitset = self.memory.OE.get();
         self.memory.OE.set(bitset | bit);
         Some(Pin::new(number, self.memory))
     }
     pub fn get_pin_as_output(&mut self, number: u8) -> Option<Pin<Output>> {
-        if number > 31 { return None }
+        if number > 31 {
+            return None;
+        }
         let bit = 1 << (number as u32);
         // Check whether the pin was already given to someone
-        if self.owned & bit == 1 { return None }
+        if self.owned & bit == 1 {
+            return None;
+        }
         self.owned |= bit;
         let bitset = self.memory.OE.get();
         self.memory.OE.set(bitset & !bit);
-        Some(Pin::new(number,self.memory))
+        Some(Pin::new(number, self.memory))
     }
 }

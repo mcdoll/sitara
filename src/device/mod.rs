@@ -4,10 +4,10 @@
 // License: MIT
 
 pub mod console;
+pub mod control_mod;
 pub mod gpio;
 pub mod timer;
 pub mod uart;
 pub mod watchdog;
-pub mod control_mod;
 
 pub use console::*;

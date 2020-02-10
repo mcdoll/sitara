@@ -3,9 +3,9 @@
 // Author: Moritz Doll
 // License: MIT
 
+use armv7::VirtualAddress;
 use core::arch::arm;
 use register::{mmio::*, register_bitfields, Field};
-use armv7::VirtualAddress;
 
 register_bitfields! {
     u32,

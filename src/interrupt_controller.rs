@@ -3,8 +3,8 @@
 // License: MIT
 
 use armv7::VirtualAddress;
-use register::{mmio::*, register_bitfields};
 use core::fmt;
+use register::{mmio::*, register_bitfields};
 
 register_bitfields! {
     u32,
@@ -311,7 +311,11 @@ impl InterruptController {
         let itr2 = unsafe { *raw_ptr };
         let raw_ptr = (self.memory_address + 0xe0) as *const u32;
         let itr3 = unsafe { *raw_ptr };
-        writeln!(writer, "ITR0 {:#x}, ITR1 {:#x}, ITR2 {:#x}, ITR3 {:#x}", itr0, itr1, itr2, itr3)?;
+        writeln!(
+            writer,
+            "ITR0 {:#x}, ITR1 {:#x}, ITR2 {:#x}, ITR3 {:#x}",
+            itr0, itr1, itr2, itr3
+        )?;
         Ok(())
     }
     pub fn new_interrupt_line(&self, number: InterruptNumber) -> InterruptLine {

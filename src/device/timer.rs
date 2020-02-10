@@ -3,9 +3,9 @@
 // Author: Moritz Doll
 // License: MIT
 
+use armv7::VirtualAddress;
 use core::arch::arm;
 use register::{mmio::*, register_bitfields, Field};
-use armv7::VirtualAddress;
 
 register_bitfields! {
     u32,
@@ -103,8 +103,11 @@ impl Timer {
     }
     fn trigger(&self) {
         let mut val = self.memory.TTGR.get();
-        if val == 0xffff_ffff { val = 0 }
-        else { val += 1 };
+        if val == 0xffff_ffff {
+            val = 0
+        } else {
+            val += 1
+        };
         self.memory.TTGR.set(val);
         self.wait(TWPS::W_PEND_TTGR);
     }

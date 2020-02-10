@@ -1,10 +1,10 @@
 //! The UART devices
 
 use crate::device::console;
+use armv7::VirtualAddress;
 use core::arch::arm;
 use core::fmt;
 use register::{mmio::*, register_bitfields, Field};
-use armv7::VirtualAddress;
 
 register_bitfields! {
     u32,
@@ -127,48 +127,48 @@ register_bitfields! {
 #[repr(C)]
 struct RegisterBlock {
     // This struct is for the normal operation mode
-    DATA: ReadWrite<u32, DATA::Register>,       // 0x00
-    IER: ReadWrite<u32, IER::Register>,         // 0x04
-    IIR: ReadWrite<u32,IIR::Register>,          // 0x08
-    LCR: ReadWrite<u32,LCR::Register>,          // 0x0C
-    MCR: ReadWrite<u32,MCR::Register>,          // 0x10
-    LSR: ReadOnly<u32, LSR::Register>,          // 0x14
-    TCR: ReadWrite<u32, TCR::Register>,         // 0x18
-    TLR: ReadWrite<u32, TLR::Register>,         // 0x1C
-    MDR1: ReadWrite<u32, MDR1::Register>,       // 0x20
-    MDR2: ReadWrite<u32, MDR2::Register>,       // 0x24
+    DATA: ReadWrite<u32, DATA::Register>, // 0x00
+    IER: ReadWrite<u32, IER::Register>,   // 0x04
+    IIR: ReadWrite<u32, IIR::Register>,   // 0x08
+    LCR: ReadWrite<u32, LCR::Register>,   // 0x0C
+    MCR: ReadWrite<u32, MCR::Register>,   // 0x10
+    LSR: ReadOnly<u32, LSR::Register>,    // 0x14
+    TCR: ReadWrite<u32, TCR::Register>,   // 0x18
+    TLR: ReadWrite<u32, TLR::Register>,   // 0x1C
+    MDR1: ReadWrite<u32, MDR1::Register>, // 0x20
+    MDR2: ReadWrite<u32, MDR2::Register>, // 0x24
     __reserved_0: [u32; 6],
-    SCR: ReadWrite<u32, SCR::Register>,         // 0x40
-    SSR: ReadOnly<u32, SSR::Register>,          // 0x44
+    SCR: ReadWrite<u32, SCR::Register>, // 0x40
+    SSR: ReadOnly<u32, SSR::Register>,  // 0x44
     __reserved_1: [u32; 2],
-    MVR: ReadOnly<u32, MVR::Register>,          // 0x50
-    SYSC: ReadWrite<u32, SYSC::Register>,       // 0x54
-    SYSS: ReadOnly<u32, SYSS::Register>,        // 0x58
+    MVR: ReadOnly<u32, MVR::Register>,    // 0x50
+    SYSC: ReadWrite<u32, SYSC::Register>, // 0x54
+    SYSS: ReadOnly<u32, SYSS::Register>,  // 0x58
 }
 
 #[allow(non_snake_case)]
 #[repr(C)]
 struct RegisterBlockConfigB {
     // This struct is for the normal operation mode
-    DLL: ReadWrite<u32, DLL::Register>,         // 0x00
-    DLH: ReadWrite<u32, DLH::Register>,         // 0x04
-    EFR: ReadWrite<u32, EFR::Register>,         // 0x08
-    LCR: ReadWrite<u32, LCR::Register>,         // 0x0C
-    MCR: ReadWrite<u32, MCR::Register>,         // 0x10
-    LSR: ReadOnly<u32, LSR::Register>,          // 0x14
-    TCR: ReadWrite<u32, TCR::Register>,         // 0x18
-    TLR: ReadWrite<u32, TLR::Register>,         // 0x1C
-    MDR1: ReadWrite<u32, MDR1::Register>,       // 0x20
-    MDR2: ReadWrite<u32, MDR2::Register>,       // 0x24
+    DLL: ReadWrite<u32, DLL::Register>,   // 0x00
+    DLH: ReadWrite<u32, DLH::Register>,   // 0x04
+    EFR: ReadWrite<u32, EFR::Register>,   // 0x08
+    LCR: ReadWrite<u32, LCR::Register>,   // 0x0C
+    MCR: ReadWrite<u32, MCR::Register>,   // 0x10
+    LSR: ReadOnly<u32, LSR::Register>,    // 0x14
+    TCR: ReadWrite<u32, TCR::Register>,   // 0x18
+    TLR: ReadWrite<u32, TLR::Register>,   // 0x1C
+    MDR1: ReadWrite<u32, MDR1::Register>, // 0x20
+    MDR2: ReadWrite<u32, MDR2::Register>, // 0x24
     __reserved_0: [u32; 4],
-    UASR: ReadOnly<u32,UASR::Register>,         // 0x38
+    UASR: ReadOnly<u32, UASR::Register>, // 0x38
     __reserved_1: u32,
-    SCR: ReadWrite<u32, SCR::Register>,         // 0x40
-    SSR: ReadOnly<u32, SSR::Register>,          // 0x44
+    SCR: ReadWrite<u32, SCR::Register>, // 0x40
+    SSR: ReadOnly<u32, SSR::Register>,  // 0x44
     __reserved_2: [u32; 2],
-    MVR: ReadOnly<u32, MVR::Register>,          // 0x50
-    SYSC: ReadWrite<u32, SYSC::Register>,       // 0x54
-    SYSS: ReadOnly<u32, SYSS::Register>,        // 0x58
+    MVR: ReadOnly<u32, MVR::Register>,    // 0x50
+    SYSC: ReadWrite<u32, SYSC::Register>, // 0x54
+    SYSS: ReadOnly<u32, SYSS::Register>,  // 0x58
 }
 
 pub enum BaudRate {
