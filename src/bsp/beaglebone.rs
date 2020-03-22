@@ -1,6 +1,9 @@
 //use armv7::VirtualAddress;
 //use armv7::PhysicalAddress;
 use crate::device::control_mod::*;
+use crate::memory_map;
+use crate::device::gpio;
+use armv7::structures::paging;
 //use register::{mmio::*, register_bitfields, Field};
 
 
@@ -85,3 +88,18 @@ pub fn get_gpio_status(pin: u8, control_mod: &Control) -> Option<u32> {
     control_mod.get(index as usize)
 }
 // Initialize the Uart
+//
+
+pub fn get_gpio(device_mapper: &paging::DeviceVmemMapper, pin: u8) -> Option<gpio::Pin<gpio::Output>> {
+    let bank_phys_addr = match pin / 32 {
+        0 => memory_map::GPIO0,
+        1 => memory_map::GPIO1,
+        2 => memory_map::GPIO2,
+        3 => memory_map::GPIO3,
+        _ => return None,
+    };
+    let bank_addr = device_mapper.lookup(bank_phys_addr)?;
+    let mut gpio = unsafe { gpio::Gpio::new(bank_addr) };
+    gpio.get_pin_as_output(pin % 32)
+}
+
